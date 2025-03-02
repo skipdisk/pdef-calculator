@@ -3,16 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Equipment DEF Calculator</title>
+    <title>Game Defense Calculators</title>
     <style>
       :root {
-        --primary: #6366f1;
-        --primary-dark: #4f46e5;
+        --primary: #4361ee;
+        --primary-light: #4895ef;
+        --primary-dark: #3f37c9;
         --secondary: #10b981;
+        --secondary-dark: #059669;
+        --accent: #f43f5e;
         --dark: #1e293b;
         --light: #f8fafc;
-        --accent: #f43f5e;
-        --gray: #64748b;
+        --background: #f1f5f9;
+        --card-bg: #ffffff;
+        --text: #334155;
+        --text-light: #64748b;
+        --text-dark: #0f172a;
+        --border: #e2e8f0;
+        --success: #48bfa0;
+        --warning: #ffaa5a;
+        --error: #ef476f;
+        --border-radius: 12px;
+        --box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
       }
 
       * {
@@ -23,29 +36,482 @@
       }
 
       body {
+        background-color: var(--background);
+        color: var(--text);
+        line-height: 1.6;
         min-height: 100vh;
         display: flex;
+        flex-direction: column;
+      }
+
+      .main-header {
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--primary-dark) 100%
+        );
+        color: white;
+        padding: 30px 0;
+        text-align: center;
+      }
+
+      .main-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .main-header p {
+        font-size: 1.1rem;
+        max-width: 700px;
+        margin: 0 auto;
+        opacity: 0.9;
+      }
+
+      .main-tabs {
+        display: flex;
         justify-content: center;
+        background: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .main-tab {
+        padding: 18px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: var(--transition);
+        color: var(--text-light);
+        display: flex;
         align-items: center;
-        background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
-        padding: 20px;
+        gap: 10px;
       }
 
-      .calculator {
+      .main-tab:hover {
+        color: var(--primary);
+      }
+
+      .main-tab.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+      }
+
+      .main-tab-icon {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 0 20px;
+        flex-grow: 1;
+      }
+
+      .calculator-container {
+        display: none;
+      }
+
+      .calculator-container.active {
+        display: block;
+        animation: fadeIn 0.5s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* PVP DEFENSE CALCULATOR STYLES */
+      .pvp-calculator {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+      }
+
+      @media (max-width: 768px) {
+        .pvp-calculator {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 25px;
+        transition: var(--transition);
+      }
+
+      .card:hover {
+        box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+      }
+
+      h2 {
+        color: var(--primary-dark);
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        border-bottom: 2px solid var(--primary-light);
+        padding-bottom: 10px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+        position: relative;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      .help-tip {
+        display: inline-block;
+        margin-left: 5px;
+        width: 18px;
+        height: 18px;
+        background-color: var(--primary-light);
+        color: white;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 18px;
+        font-size: 12px;
+        cursor: help;
+        position: relative;
+      }
+
+      .help-tip:hover .tooltip {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      .tooltip {
+        visibility: hidden;
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--dark);
+        color: white;
+        text-align: center;
+        padding: 10px;
+        border-radius: var(--border-radius);
+        width: 220px;
+        z-index: 10;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 12px;
+        font-weight: normal;
+        pointer-events: none;
+        margin-bottom: 5px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+      }
+
+      .tooltip::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: var(--dark) transparent transparent transparent;
+      }
+
+      input[type="number"] {
         width: 100%;
-        max-width: 500px;
+        padding: 14px;
+        border: 1px solid var(--border);
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        transition: var(--transition);
         background-color: var(--light);
-        border-radius: 20px;
+        color: var(--text-dark);
+      }
+
+      input[type="number"]:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+      }
+
+      .input-icon {
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
+        color: var(--text-light);
+        font-size: 0.9rem;
+      }
+
+      .results {
+        margin-top: 20px;
+      }
+
+      .result-card {
+        padding: 20px;
+        border-radius: var(--border-radius);
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .setup-1 {
+        background-color: rgba(67, 97, 238, 0.1);
+        border-left: 4px solid var(--primary);
+      }
+
+      .setup-2 {
+        background-color: rgba(86, 11, 173, 0.1);
+        border-left: 4px solid var(--primary-dark);
+      }
+
+      .result-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .result-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-top: 10px;
+        text-align: center;
+      }
+
+      .result-details {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .detail-item {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px dashed var(--border);
+        padding: 5px 0;
+      }
+
+      .detail-label {
+        color: var(--text-light);
+        font-size: 0.9rem;
+      }
+
+      .detail-value {
+        font-weight: 600;
+      }
+
+      .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .tab {
+        padding: 12px 20px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: var(--transition);
+        font-weight: 600;
+      }
+
+      .tab:hover {
+        color: var(--primary);
+      }
+
+      .tab.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+      }
+
+      .comparison-header {
+        text-align: center;
+        margin-bottom: 25px;
+        max-width: 100%;
+      }
+
+      .comparison-header h3 {
+        color: var(--primary-dark);
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+      }
+
+      .comparison-description {
+        color: var(--text-light);
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .comparison-wrapper {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        max-width: 100%;
+      }
+
+      .comparison-card {
+        flex: 1;
+        min-width: 280px;
+        max-width: calc(50% - 10px); /* Half width minus half of the gap */
+        box-shadow: var(--box-shadow);
+        border-radius: var(--border-radius);
         overflow: hidden;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        transition: transform 0.3s ease;
       }
 
-      .calculator:hover {
+      .comparison-title-box {
+        padding: 15px;
+        text-align: center;
+        color: white;
+      }
+
+      .comparison-title-box h4 {
+        margin: 0;
+        font-size: 1.2rem;
+      }
+
+      .weapon-1h {
+        background-color: var(--primary);
+      }
+
+      .weapon-2h {
+        background-color: var(--primary-light);
+      }
+
+      .comparison-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .comparison-table th,
+      .comparison-table td {
+        padding: 12px 15px;
+        text-align: center;
+        border: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .comparison-table th {
+        background-color: var(--light);
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .comparison-table td {
+        background-color: var(--card-bg);
+        font-weight: 500;
+      }
+
+      .weapon-1h-table tr:nth-child(even) td {
+        background-color: rgba(67, 97, 238, 0.05);
+      }
+
+      .weapon-2h-table tr:nth-child(even) td {
+        background-color: rgba(72, 149, 239, 0.05);
+      }
+
+      .comparison-insights {
+        background-color: var(--light);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        margin-top: 30px;
+        border-left: 4px solid var(--secondary);
+        max-width: 100%;
+      }
+
+      .comparison-insights h4 {
+        color: var(--secondary-dark);
+        margin-bottom: 15px;
+      }
+
+      .comparison-insights ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      .comparison-insights li {
+        margin-bottom: 8px;
+        line-height: 1.5;
+      }
+
+      .chart-container {
+        height: 300px;
+        margin-bottom: 30px;
+        position: relative;
+        background-color: var(--card-bg);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        max-width: 100%;
+      }
+
+      .recommendation {
+        background-color: var(--light);
+        border: 1px solid var(--border);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        margin-top: 30px;
+        text-align: center;
+      }
+
+      .recommendation p {
+        margin-bottom: 10px;
+      }
+
+      .better-setup {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--success);
+        margin-top: 10px;
+      }
+
+      #chartCanvas {
+        width: 100%;
+        height: 100%;
+      }
+
+      /* EQUIPMENT DEF CALCULATOR STYLES */
+      .eq-calculator {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--box-shadow);
+        transition: var(--transition);
+      }
+
+      .eq-calculator:hover {
         transform: translateY(-5px);
+        box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.2);
       }
 
-      .calculator-header {
+      .eq-calculator-header {
         background-color: var(--dark);
         color: var(--light);
         padding: 25px;
@@ -54,21 +520,23 @@
         overflow: hidden;
       }
 
-      .calculator-header h1 {
+      .eq-calculator-header h2 {
         font-size: 1.8rem;
         margin-bottom: 5px;
         position: relative;
         z-index: 2;
+        border-bottom: none;
+        color: white;
       }
 
-      .calculator-header p {
+      .eq-calculator-header p {
         font-size: 0.9rem;
-        color: var(--gray);
+        color: var(--text-light);
         position: relative;
         z-index: 2;
       }
 
-      .calculator-header::before {
+      .eq-calculator-header::before {
         content: "";
         position: absolute;
         width: 150px;
@@ -81,7 +549,7 @@
         z-index: 1;
       }
 
-      .calculator-header::after {
+      .eq-calculator-header::after {
         content: "";
         position: absolute;
         width: 100px;
@@ -94,53 +562,15 @@
         z-index: 1;
       }
 
-      .calculator-body {
+      .eq-calculator-body {
         padding: 30px 25px;
-      }
-
-      .input-group {
-        margin-bottom: 25px;
-        position: relative;
-      }
-
-      .input-group label {
-        display: block;
-        font-size: 0.95rem;
-        margin-bottom: 8px;
-        color: var(--dark);
-        font-weight: 500;
-      }
-
-      .input-group input {
-        width: 100%;
-        padding: 15px;
-        border: 2px solid #e2e8f0;
-        border-radius: 10px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        color: var(--dark);
-        background-color: #f8fafc;
-      }
-
-      .input-group input:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-      }
-
-      .input-group .input-icon {
-        position: absolute;
-        right: 15px;
-        bottom: 15px;
-        color: var(--gray);
-        font-size: 0.9rem;
       }
 
       .calculate-btn {
         width: 100%;
-        padding: 15px;
+        padding: 16px;
         border: none;
-        border-radius: 10px;
+        border-radius: var(--border-radius);
         background: linear-gradient(
           to right,
           var(--primary),
@@ -150,11 +580,12 @@
         font-size: 1rem;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: var(--transition);
         display: flex;
         justify-content: center;
         align-items: center;
         margin-bottom: 25px;
+        gap: 8px;
       }
 
       .calculate-btn:hover {
@@ -164,7 +595,7 @@
           var(--primary)
         );
         transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 10px 15px -3px rgba(67, 97, 238, 0.3);
       }
 
       .calculate-btn:active {
@@ -172,61 +603,62 @@
       }
 
       .result-container {
-        background-color: #f1f5f9;
-        border-radius: 10px;
+        background-color: var(--light);
+        border-radius: var(--border-radius);
         padding: 20px;
         margin-top: 10px;
-        transition: all 0.3s ease;
+        transition: var(--transition);
       }
 
       .result-container.active {
-        background-color: #dbeafe;
+        background-color: rgba(67, 97, 238, 0.1);
         border-left: 4px solid var(--primary);
       }
 
       .result-title {
         font-size: 0.9rem;
-        color: var(--gray);
+        color: var(--text-light);
         margin-bottom: 10px;
       }
 
-      .result-value {
+      .eq-result-value {
         font-size: 1.5rem;
         font-weight: 600;
-        color: var(--dark);
+        color: var(--text-dark);
         display: flex;
         align-items: center;
       }
 
       .result-icon {
         color: var(--primary);
-        margin-right: 10px;
+        margin-right: 12px;
         font-size: 1.5rem;
       }
 
       .formula-info {
         margin-top: 30px;
-        background-color: #f1f5f9;
-        border-radius: 10px;
-        padding: 15px;
+        background-color: var(--light);
+        border-radius: var(--border-radius);
+        padding: 18px;
         font-size: 0.9rem;
-        color: var(--gray);
+        color: var(--text-light);
         border-left: 4px solid var(--secondary);
       }
 
       .formula-info h3 {
-        color: var(--dark);
-        margin-bottom: 8px;
+        color: var(--secondary-dark);
+        margin-bottom: 10px;
         font-size: 1rem;
       }
 
       .formula-code {
         background-color: var(--dark);
         color: var(--light);
-        padding: 10px;
-        border-radius: 5px;
-        margin: 10px 0;
+        padding: 12px;
+        border-radius: 8px;
+        margin: 12px 0;
         font-family: monospace;
+        font-size: 0.9rem;
       }
 
       .swap-inputs {
@@ -244,15 +676,18 @@
         align-items: center;
         font-size: 0.9rem;
         font-weight: 500;
-        transition: all 0.3s ease;
+        transition: var(--transition);
+        padding: 8px 12px;
+        border-radius: 20px;
       }
 
       .swap-btn:hover {
         color: var(--primary-dark);
+        background-color: rgba(67, 97, 238, 0.1);
       }
 
       .swap-icon {
-        margin-right: 5px;
+        margin-right: 8px;
         transition: transform 0.3s ease;
       }
 
@@ -276,126 +711,1040 @@
         animation: pulse 0.5s;
       }
 
+      footer {
+        margin-top: 50px;
+        text-align: center;
+        color: var(--text-light);
+        font-size: 0.9rem;
+        padding: 20px 0;
+        background-color: var(--light);
+        border-top: 1px solid var(--border);
+      }
+
+      @media (max-width: 768px) {
+        .main-tab {
+          padding: 15px;
+          font-size: 0.9rem;
+        }
+
+        .container {
+          padding: 0 15px;
+          margin: 20px auto;
+        }
+
+        .card {
+          padding: 20px;
+        }
+
+        .comparison-wrapper {
+          flex-direction: column;
+        }
+
+        .comparison-card {
+          max-width: 100%;
+        }
+      }
+
       @media (max-width: 500px) {
-        .calculator {
-          border-radius: 15px;
+        .main-header h1 {
+          font-size: 2rem;
         }
 
-        .calculator-header {
-          padding: 20px;
+        .main-header p {
+          font-size: 0.9rem;
         }
 
-        .calculator-header h1 {
-          font-size: 1.5rem;
+        .main-tab-icon {
+          width: 20px;
+          height: 20px;
         }
 
-        .calculator-body {
-          padding: 20px;
-        }
-
-        .input-group input,
+        input[type="number"],
         .calculate-btn {
           padding: 12px;
         }
 
         .result-value {
-          font-size: 1.3rem;
+          font-size: 1.5rem;
+        }
+
+        .eq-calculator {
+          border-radius: 12px;
+        }
+
+        .eq-calculator-header {
+          padding: 20px;
         }
       }
     </style>
   </head>
   <body>
-    <div class="calculator">
-      <div class="calculator-header">
-        <h1>Equipment DEF Calculator</h1>
-        <p>Calculate DEF values based on percentage</p>
+    <header class="main-header">
+      <h1>Game Defense Calculators</h1>
+      <p>Optimize your defensive setups with our specialized calculators</p>
+    </header>
+
+    <div class="main-tabs">
+      <div class="main-tab active" data-calc="pvpDefense">
+        <svg
+          class="main-tab-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+        PvP Defense Calculator
       </div>
+      <div class="main-tab" data-calc="equipDef">
+        <svg
+          class="main-tab-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M16.2 7.8l-2 6.3-6.4 2.1 2-6.3z"></path>
+        </svg>
+        Equipment DEF Calculator
+      </div>
+    </div>
 
-      <div class="calculator-body">
-        <div class="input-group">
-          <label for="eqDef">Equipment DEF</label>
-          <input
-            type="number"
-            id="eqDef"
-            placeholder="Enter equipment DEF (e.g. 15000)"
-          />
-          <span class="input-icon">DEF</span>
-        </div>
+    <div class="container">
+      <!-- PvP Defense Calculator Container -->
+      <div id="pvpDefenseCalc" class="calculator-container active">
+        <div class="pvp-calculator">
+          <div class="card">
+            <h2>Defender Setup 1</h2>
+            <div class="form-group">
+              <label for="pvpReduction1"
+                >PvP Reduction
+                <span class="help-tip"
+                  >?<span class="tooltip"
+                    >Your character's PvP reduction stat that reduces damage
+                    from other players.</span
+                  ></span
+                ></label
+              >
+              <input type="number" id="pvpReduction1" value="13000" />
+            </div>
+            <div class="form-group">
+              <label for="equipPdef1"
+                >Equipment PDEF
+                <span class="help-tip"
+                  >?<span class="tooltip"
+                    >The physical defense provided by your equipment.</span
+                  ></span
+                ></label
+              >
+              <input type="number" id="equipPdef1" value="18206.2" />
+            </div>
+            <div class="form-group">
+              <label for="equipPdefPercent1"
+                >Equipment PDEF%
+                <span class="help-tip"
+                  >?<span class="tooltip"
+                    >Percentage bonus to physical defense from equipment. If
+                    your stat shows 123.4%, enter 123.4</span
+                  ></span
+                ></label
+              >
+              <input type="number" id="equipPdefPercent1" value="149.4" />
+            </div>
+            <div class="form-group">
+              <label for="refinePdef1"
+                >Refine PDEF
+                <span class="help-tip"
+                  >?<span class="tooltip"
+                    >Additional physical defense from item refinements.</span
+                  ></span
+                ></label
+              >
+              <input type="number" id="refinePdef1" value="512" />
+            </div>
+            <div class="form-group">
+              <label for="basePdef1"
+                >Base PDEF
+                <span class="help-tip"
+                  >?<span class="tooltip"
+                    >Your character's base physical defense without
+                    equipment.</span
+                  ></span
+                ></label
+              >
+              <input type="number" id="basePdef1" value="7300" />
+            </div>
+          </div>
 
-        <div class="input-group">
-          <label for="eqDefPercent">Equipment DEF %</label>
-          <input
-            type="number"
-            step="0.01"
-            id="eqDefPercent"
-            placeholder="Enter DEF % (e.g. 50.05)"
-          />
-          <span class="input-icon">%</span>
-        </div>
-
-        <div class="swap-inputs">
-          <button class="swap-btn" id="swapMode">
-            <svg
-              class="swap-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M7 16V4M7 4L3 8M7 4L11 8M17 8v12M17 20l4-4M17 20l-4-4" />
-            </svg>
-            <span id="calculationMode">Calculate DEF %</span>
-          </button>
-        </div>
-
-        <button class="calculate-btn" id="calculateBtn">Calculate</button>
-
-        <div class="result-container" id="resultContainer">
-          <div class="result-title" id="resultTitle">Calculated Value</div>
-          <div class="result-value">
-            <svg
-              class="result-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
-              ></path>
-              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-              <line x1="12" y1="22.08" x2="12" y2="12"></line>
-            </svg>
-            <span id="resultValue">--</span>
+          <div class="card">
+            <h2>Defender Setup 2</h2>
+            <div class="form-group">
+              <label for="pvpReduction2"
+                >PvP Reduction
+                <span class="help-tip"
+                  >?<span class="tooltip"
+                    >Your character's PvP reduction stat that reduces damage
+                    from other players.</span
+                  ></span
+                ></label
+              >
+              <input type="number" id="pvpReduction2" value="12700" />
+            </div>
+            <div class="form-group">
+              <label for="equipPdef2"
+                >Equipment PDEF
+                <span class="help-tip"
+                  >?<span class="tooltip"
+                    >The physical defense provided by your equipment.</span
+                  ></span
+                ></label
+              >
+              <input type="number" id="equipPdef2" value="19097" />
+            </div>
+            <div class="form-group">
+              <label for="equipPdefPercent2"
+                >Equipment PDEF%
+                <span class="help-tip"
+                  >?<span class="tooltip"
+                    >Percentage bonus to physical defense from equipment. If
+                    your stat shows 123.4%, enter 123.4</span
+                  ></span
+                ></label
+              >
+              <input type="number" id="equipPdefPercent2" value="165.24" />
+            </div>
+            <div class="form-group">
+              <label for="refinePdef2"
+                >Refine PDEF
+                <span class="help-tip"
+                  >?<span class="tooltip"
+                    >Additional physical defense from item refinements.</span
+                  ></span
+                ></label
+              >
+              <input type="number" id="refinePdef2" value="304" />
+            </div>
+            <div class="form-group">
+              <label for="basePdef2"
+                >Base PDEF
+                <span class="help-tip"
+                  >?<span class="tooltip"
+                    >Your character's base physical defense without
+                    equipment.</span
+                  ></span
+                ></label
+              >
+              <input type="number" id="basePdef2" value="7300" />
+            </div>
           </div>
         </div>
 
-        <div class="formula-info">
-          <h3>How the calculation works:</h3>
-          <p>
-            The formula operates differently based on what you're calculating:
-          </p>
-          <div class="formula-code">DEF % = (Original DEF / Base DEF) - 1</div>
-          <div class="formula-code">Base DEF = Original DEF / (1 + DEF%)</div>
-          <p>
-            For example, if equipment DEF is 15000 and DEF% is 50.05%, the base
-            DEF would be 15000/1.5005 = 9996.67
-          </p>
+        <div class="card" style="margin-top: 30px">
+          <h2>Attacker Setup</h2>
+          <div class="form-group">
+            <label for="pvpDamage"
+              >PvP Damage
+              <span class="help-tip"
+                >?<span class="tooltip"
+                  >The attacker's PvP damage stat that increases damage against
+                  other players.</span
+                ></span
+              ></label
+            >
+            <input type="number" id="pvpDamage" value="13000" />
+          </div>
+          <div class="form-group">
+            <label for="ignorePdef"
+              >Ignore PDEF
+              <span class="help-tip"
+                >?<span class="tooltip"
+                  >The attacker's ability to ignore physical defense.</span
+                ></span
+              ></label
+            >
+            <input type="number" id="ignorePdef" value="7100" />
+          </div>
+          <div class="form-group">
+            <label for="ignorePdefPercent"
+              >Ignore PDEF%
+              <span class="help-tip"
+                >?<span class="tooltip"
+                  >Percentage of target's physical defense that is ignored. If
+                  the stat shows 70%, enter 70.</span
+                ></span
+              ></label
+            >
+            <input type="number" id="ignorePdefPercent" value="70" />
+          </div>
+        </div>
+
+        <div class="results">
+          <div class="card">
+            <h2>Results</h2>
+
+            <div class="tabs">
+              <div class="tab active" data-tab="summary">Summary</div>
+              <div class="tab" data-tab="details">Detailed Breakdown</div>
+              <div class="tab" data-tab="comparison">
+                Defense Ignore Comparison
+              </div>
+            </div>
+
+            <div class="tab-content active" id="summary">
+              <div class="result-card setup-1">
+                <div class="result-title">Setup 1: Final Mitigation</div>
+                <div class="result-value" id="finalMitigation1">52.86%</div>
+              </div>
+
+              <div class="result-card setup-2">
+                <div class="result-title">Setup 2: Final Mitigation</div>
+                <div class="result-value" id="finalMitigation2">33.03%</div>
+              </div>
+
+              <div class="recommendation">
+                <p>Based on the calculations, the better setup is:</p>
+                <div class="better-setup" id="betterSetup">Setup 1</div>
+              </div>
+            </div>
+
+            <div class="tab-content" id="details">
+              <div class="result-card setup-1">
+                <div class="result-title">Setup 1 Details</div>
+                <div class="result-details">
+                  <div class="detail-item">
+                    <span class="detail-label">PvP Stat Difference:</span>
+                    <span class="detail-value" id="pvpDiff1">0</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">PvP Reduction:</span>
+                    <span class="detail-value" id="pvpReductionPercent1"
+                      >0.00%</span
+                    >
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Base PDEF:</span>
+                    <span class="detail-value" id="calculatedBasePdef1"
+                      >7300</span
+                    >
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Mitigation from DEF:</span>
+                    <span class="detail-value" id="defMitigation1">52.86%</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Final Mitigation:</span>
+                    <span class="detail-value" id="finalMitigationDetail1"
+                      >52.86%</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="result-card setup-2">
+                <div class="result-title">Setup 2 Details</div>
+                <div class="result-details">
+                  <div class="detail-item">
+                    <span class="detail-label">PvP Stat Difference:</span>
+                    <span class="detail-value" id="pvpDiff2">300</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">PvP Reduction:</span>
+                    <span class="detail-value" id="pvpReductionPercent2"
+                      >-10.50%</span
+                    >
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Base PDEF:</span>
+                    <span class="detail-value" id="calculatedBasePdef2"
+                      >7199.89</span
+                    >
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Mitigation from DEF:</span>
+                    <span class="detail-value" id="defMitigation2">39.39%</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Final Mitigation:</span>
+                    <span class="detail-value" id="finalMitigationDetail2"
+                      >33.03%</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-content" id="comparison">
+              <div class="comparison-header">
+                <h3>Damage Reduction by Defense Ignore Level</h3>
+                <p class="comparison-description">
+                  This table shows how your defenses perform against attackers
+                  with different levels of defense penetration. Higher
+                  percentage values mean better damage reduction.
+                </p>
+              </div>
+
+              <div class="comparison-wrapper">
+                <div class="comparison-card">
+                  <div class="comparison-title-box weapon-1h">
+                    <h4>1H + Shield, full +23</h4>
+                  </div>
+                  <table class="comparison-table weapon-1h-table">
+                    <thead>
+                      <tr>
+                        <th>DEF-Ignore</th>
+                        <th>Reduction%</th>
+                      </tr>
+                    </thead>
+                    <tbody id="comparison1HTableBody">
+                      <!-- Pre-populate with the values from the spreadsheet -->
+                      <tr>
+                        <td>1500</td>
+                        <td>64.70%</td>
+                      </tr>
+                      <tr>
+                        <td>1000</td>
+                        <td>55.01%</td>
+                      </tr>
+                      <tr>
+                        <td>900</td>
+                        <td>52.39%</td>
+                      </tr>
+                      <tr>
+                        <td>800</td>
+                        <td>49.44%</td>
+                      </tr>
+                      <tr>
+                        <td>700</td>
+                        <td>46.12%</td>
+                      </tr>
+                      <tr>
+                        <td>600</td>
+                        <td>42.30%</td>
+                      </tr>
+                      <tr>
+                        <td>500</td>
+                        <td>37.93%</td>
+                      </tr>
+                      <tr>
+                        <td>400</td>
+                        <td>32.84%</td>
+                      </tr>
+                      <tr>
+                        <td>300</td>
+                        <td>26.84%</td>
+                      </tr>
+                      <tr>
+                        <td>200</td>
+                        <td>19.65%</td>
+                      </tr>
+                      <tr>
+                        <td>100</td>
+                        <td>10.89%</td>
+                      </tr>
+                      <tr>
+                        <td>0</td>
+                        <td>0.00%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="comparison-card">
+                  <div class="comparison-title-box weapon-2h">
+                    <h4>2H, full +23</h4>
+                  </div>
+                  <table class="comparison-table weapon-2h-table">
+                    <thead>
+                      <tr>
+                        <th>DEF-Ignore</th>
+                        <th>Reduction%</th>
+                      </tr>
+                    </thead>
+                    <tbody id="comparison2HTableBody">
+                      <!-- Pre-populate with the values from the spreadsheet -->
+                      <tr>
+                        <td>1500</td>
+                        <td>67.48%</td>
+                      </tr>
+                      <tr>
+                        <td>1000</td>
+                        <td>58.03%</td>
+                      </tr>
+                      <tr>
+                        <td>900</td>
+                        <td>55.44%</td>
+                      </tr>
+                      <tr>
+                        <td>800</td>
+                        <td>52.52%</td>
+                      </tr>
+                      <tr>
+                        <td>700</td>
+                        <td>49.18%</td>
+                      </tr>
+                      <tr>
+                        <td>600</td>
+                        <td>45.34%</td>
+                      </tr>
+                      <tr>
+                        <td>500</td>
+                        <td>40.88%</td>
+                      </tr>
+                      <tr>
+                        <td>400</td>
+                        <td>35.61%</td>
+                      </tr>
+                      <tr>
+                        <td>300</td>
+                        <td>29.32%</td>
+                      </tr>
+                      <tr>
+                        <td>200</td>
+                        <td>21.66%</td>
+                      </tr>
+                      <tr>
+                        <td>100</td>
+                        <td>12.13%</td>
+                      </tr>
+                      <tr>
+                        <td>0</td>
+                        <td>0.00%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="chart-container">
+                <canvas id="chartCanvas"></canvas>
+              </div>
+
+              <div class="comparison-insights">
+                <h4>Key Insights:</h4>
+                <ul>
+                  <li>
+                    2H setup generally provides better reduction across all
+                    DEF-Ignore levels
+                  </li>
+                  <li>
+                    The difference is most noticeable at middle DEF-Ignore
+                    values (300-900)
+                  </li>
+                  <li>
+                    Both setups provide similar reduction at very high
+                    DEF-Ignore values (1500)
+                  </li>
+                  <li>
+                    Neither setup provides protection against attackers with 0
+                    DEF-Ignore
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Equipment DEF Calculator Container -->
+      <div id="equipDefCalc" class="calculator-container">
+        <div class="eq-calculator">
+          <div class="eq-calculator-header">
+            <h2>Equipment DEF Calculator</h2>
+            <p>Calculate DEF values based on percentage</p>
+          </div>
+
+          <div class="eq-calculator-body">
+            <div class="form-group">
+              <label for="eqDef">Equipment DEF</label>
+              <input
+                type="number"
+                id="eqDef"
+                placeholder="Enter equipment DEF (e.g. 15000)"
+              />
+              <span class="input-icon">DEF</span>
+            </div>
+
+            <div class="form-group">
+              <label for="eqDefPercent">Equipment DEF %</label>
+              <input
+                type="number"
+                step="0.01"
+                id="eqDefPercent"
+                placeholder="Enter DEF % (e.g. 50.05)"
+              />
+              <span class="input-icon" id="secondInputIcon">%</span>
+            </div>
+
+            <div class="swap-inputs">
+              <button class="swap-btn" id="swapMode">
+                <svg
+                  class="swap-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M7 16V4M7 4L3 8M7 4L11 8M17 8v12M17 20l4-4M17 20l-4-4"
+                  />
+                </svg>
+                <span id="calculationMode">Calculate Base DEF</span>
+              </button>
+            </div>
+
+            <button class="calculate-btn" id="calculateBtn">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="2" y="12" width="6" height="8"></rect>
+                <rect x="10" y="8" width="6" height="12"></rect>
+                <rect x="18" y="4" width="6" height="16"></rect>
+              </svg>
+              Calculate
+            </button>
+
+            <div class="result-container" id="resultContainer">
+              <div class="result-title" id="resultTitle">Calculated Value</div>
+              <div class="eq-result-value">
+                <svg
+                  class="result-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+                  ></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+                <span id="resultValue">--</span>
+              </div>
+            </div>
+
+            <div class="formula-info">
+              <h3>How the calculation works:</h3>
+              <p>
+                The formula operates differently based on what you're
+                calculating:
+              </p>
+              <div class="formula-code">
+                DEF % = (Original DEF / Base DEF) - 1
+              </div>
+              <div class="formula-code">
+                Base DEF = Original DEF / (1 + DEF%)
+              </div>
+              <p>
+                For example, if equipment DEF is 15000 and DEF% is 50.05%, the
+                base DEF would be 15000/1.5005 = 9996.67
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
+    <footer>
+      <p>
+        Game Defense Calculators &copy; 2025 - Helping optimize your defensive
+        setups
+      </p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
+      /****************** SHARED FUNCTIONALITY ******************/
+      // Main tab switching
+      document.querySelectorAll(".main-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          // Update active tab
+          document
+            .querySelectorAll(".main-tab")
+            .forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+
+          // Show corresponding calculator
+          const calcId = tab.getAttribute("data-calc");
+          document.querySelectorAll(".calculator-container").forEach((calc) => {
+            calc.classList.remove("active");
+          });
+          document.getElementById(calcId + "Calc").classList.add("active");
+
+          // Initialize chart if showing PVP Defense calculator and comparison tab is active
+          if (calcId === "pvpDefense") {
+            const activeTab = document
+              .querySelector(".tab.active")
+              .getAttribute("data-tab");
+            if (activeTab === "comparison" && pvpChart === null) {
+              initializePvPChart();
+            }
+          }
+        });
+      });
+
+      /****************** PVP DEFENSE CALCULATOR ******************/
+      let pvpChart = null;
+
+      // DOM Elements
+      const pvpInputs = document.querySelectorAll(
+        '#pvpDefenseCalc input[type="number"]'
+      );
+      const pvpTabs = document.querySelectorAll("#pvpDefenseCalc .tab");
+      const pvpTabContents = document.querySelectorAll(
+        "#pvpDefenseCalc .tab-content"
+      );
+
+      // Add event listeners
+      pvpInputs.forEach((input) => {
+        input.addEventListener("input", calculatePvP);
+      });
+
+      pvpTabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          pvpTabs.forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+
+          const tabId = tab.getAttribute("data-tab");
+          pvpTabContents.forEach((content) => {
+            content.classList.remove("active");
+          });
+          document.getElementById(tabId).classList.add("active");
+
+          if (tabId === "comparison" && pvpChart === null) {
+            initializePvPChart();
+          }
+        });
+      });
+
+      // PvP Calculation functions
+      function calculatePvP() {
+        // Get all input values
+        const pvpReduction1 =
+          parseFloat(document.getElementById("pvpReduction1").value) || 0;
+        const equipPdef1 =
+          parseFloat(document.getElementById("equipPdef1").value) || 0;
+        const equipPdefPercent1 =
+          parseFloat(document.getElementById("equipPdefPercent1").value) || 0;
+        const refinePdef1 =
+          parseFloat(document.getElementById("refinePdef1").value) || 0;
+        const basePdef1 =
+          parseFloat(document.getElementById("basePdef1").value) || 0;
+
+        const pvpReduction2 =
+          parseFloat(document.getElementById("pvpReduction2").value) || 0;
+        const equipPdef2 =
+          parseFloat(document.getElementById("equipPdef2").value) || 0;
+        const equipPdefPercent2 =
+          parseFloat(document.getElementById("equipPdefPercent2").value) || 0;
+        const refinePdef2 =
+          parseFloat(document.getElementById("refinePdef2").value) || 0;
+        const basePdef2 =
+          parseFloat(document.getElementById("basePdef2").value) || 0;
+
+        const pvpDamage =
+          parseFloat(document.getElementById("pvpDamage").value) || 0;
+        const ignorePdef =
+          parseFloat(document.getElementById("ignorePdef").value) || 0;
+        const ignorePdefPercent =
+          parseFloat(document.getElementById("ignorePdefPercent").value) || 0;
+
+        // Calculate PvP difference
+        const pvpDiff1 = pvpDamage - pvpReduction1;
+        const pvpDiff2 = pvpDamage - pvpReduction2;
+
+        // Calculate PvP reduction percentage
+        const pvpReductionPercent1 = calculatePvPReduction(pvpDiff1);
+        const pvpReductionPercent2 = calculatePvPReduction(pvpDiff2);
+
+        // Calculate base PDEF - using the correct formula from the spreadsheet
+        const calculatedBasePdef1 = equipPdef1 / (1 + equipPdefPercent1 / 100);
+        const calculatedBasePdef2 = equipPdef2 / (1 + equipPdefPercent2 / 100);
+
+        // Calculate DEF mitigation
+        const defMitigation1 = calculateDefMitigation(
+          calculatedBasePdef1,
+          equipPdef1,
+          equipPdefPercent1,
+          refinePdef1,
+          ignorePdef,
+          ignorePdefPercent
+        );
+
+        const defMitigation2 = calculateDefMitigation(
+          calculatedBasePdef2,
+          equipPdef2,
+          equipPdefPercent2,
+          refinePdef2,
+          ignorePdef,
+          ignorePdefPercent
+        );
+
+        // Calculate final mitigation
+        const finalMitigation1 = calculateFinalMitigation(
+          defMitigation1,
+          pvpReductionPercent1
+        );
+        const finalMitigation2 = calculateFinalMitigation(
+          defMitigation2,
+          pvpReductionPercent2
+        );
+
+        // Update the results
+        document.getElementById("finalMitigation1").textContent =
+          finalMitigation1.toFixed(2) + "%";
+        document.getElementById("finalMitigation2").textContent =
+          finalMitigation2.toFixed(2) + "%";
+        document.getElementById("betterSetup").textContent =
+          finalMitigation1 > finalMitigation2 ? "Setup 1" : "Setup 2";
+
+        // Update details
+        document.getElementById("pvpDiff1").textContent = pvpDiff1;
+        document.getElementById("pvpReductionPercent1").textContent =
+          pvpReductionPercent1.toFixed(2) + "%";
+        document.getElementById("calculatedBasePdef1").textContent =
+          calculatedBasePdef1.toFixed(2);
+        document.getElementById("defMitigation1").textContent =
+          defMitigation1.toFixed(2) + "%";
+        document.getElementById("finalMitigationDetail1").textContent =
+          finalMitigation1.toFixed(2) + "%";
+
+        document.getElementById("pvpDiff2").textContent = pvpDiff2;
+        document.getElementById("pvpReductionPercent2").textContent =
+          pvpReductionPercent2.toFixed(2) + "%";
+        document.getElementById("calculatedBasePdef2").textContent =
+          calculatedBasePdef2.toFixed(2);
+        document.getElementById("defMitigation2").textContent =
+          defMitigation2.toFixed(2) + "%";
+        document.getElementById("finalMitigationDetail2").textContent =
+          finalMitigation2.toFixed(2) + "%";
+
+        // If chart is initialized, update it
+        if (pvpChart !== null) {
+          updatePvPChart();
+        }
+      }
+
+      function calculatePvPReduction(pvpDiff) {
+        if (pvpDiff > 3500) {
+          return -55 - (pvpDiff - 3500) * 0.003;
+        } else if (pvpDiff > 2000) {
+          return -40 - (pvpDiff - 2000) * 0.01;
+        } else if (pvpDiff > 500) {
+          return -17.5 - (pvpDiff - 500) * 0.015;
+        } else if (pvpDiff > 0) {
+          return -pvpDiff * 0.035;
+        } else if (pvpDiff < -3500) {
+          return 55;
+        } else if (pvpDiff < -2000) {
+          return 40 - (pvpDiff + 2000) * 0.01;
+        } else if (pvpDiff < -500) {
+          return 17.5 - (pvpDiff + 500) * 0.015;
+        } else {
+          return -pvpDiff * 0.035;
+        }
+      }
+
+      function calculateDefMitigation(
+        basePdef,
+        equipPdef,
+        equipPdefPercent,
+        refinePdef,
+        ignorePdef,
+        ignorePdefPercent
+      ) {
+        // Following the exact formula from the spreadsheet
+        const effectiveBasePdef = Math.max(basePdef - ignorePdef, 0);
+        const scaledPdef =
+          effectiveBasePdef *
+            (1 + equipPdefPercent / 100) *
+            (1 - ignorePdefPercent / 100) +
+          refinePdef;
+        return Math.max(scaledPdef / (scaledPdef + 118 * 5), 0.05) * 100;
+      }
+
+      function calculateFinalMitigation(defMitigation, pvpReductionPercent) {
+        // Following the exact formula from the spreadsheet
+        return (
+          (1 - (1 - defMitigation / 100) * (1 - pvpReductionPercent / 100)) *
+          100
+        );
+      }
+
+      function initializePvPChart() {
+        const ctx = document.getElementById("chartCanvas").getContext("2d");
+        pvpChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: [],
+            datasets: [],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: "Damage Reduction %",
+                  font: {
+                    weight: "bold",
+                    size: 14,
+                  },
+                },
+                max: 100,
+                grid: {
+                  color: "rgba(0, 0, 0, 0.05)",
+                },
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: "DEF-Ignore",
+                  font: {
+                    weight: "bold",
+                    size: 14,
+                  },
+                },
+                grid: {
+                  color: "rgba(0, 0, 0, 0.05)",
+                },
+              },
+            },
+            plugins: {
+              legend: {
+                position: "top",
+                labels: {
+                  padding: 20,
+                  boxWidth: 15,
+                  usePointStyle: true,
+                  font: {
+                    size: 13,
+                  },
+                },
+              },
+              title: {
+                display: true,
+                text: "Damage Reduction vs DEF-Ignore",
+                font: {
+                  size: 18,
+                  weight: "bold",
+                },
+                padding: {
+                  top: 10,
+                  bottom: 30,
+                },
+              },
+              tooltip: {
+                backgroundColor: "rgba(0, 0, 0, 0.7)",
+                titleFont: {
+                  size: 13,
+                },
+                bodyFont: {
+                  size: 13,
+                },
+                padding: 12,
+                callbacks: {
+                  label: function (context) {
+                    return `${context.dataset.label}: ${context.raw.toFixed(
+                      2
+                    )}%`;
+                  },
+                },
+              },
+            },
+            elements: {
+              line: {
+                borderWidth: 3,
+              },
+              point: {
+                radius: 4,
+                hoverRadius: 6,
+              },
+            },
+          },
+        });
+
+        updatePvPChart();
+      }
+
+      function updatePvPChart() {
+        if (pvpChart === null) {
+          initializePvPChart();
+          return;
+        }
+
+        // For the comparison tab, we're using pre-populated values from the spreadsheet
+        const defIgnoreValues = [
+          0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500,
+        ];
+
+        // Values from the spreadsheet for 1H + Shield
+        const oneHandValues = [
+          0.0, 10.89, 19.65, 26.84, 32.84, 37.93, 42.3, 46.12, 49.44, 52.39,
+          55.01, 64.7,
+        ];
+
+        // Values from the spreadsheet for 2H
+        const twoHandValues = [
+          0.0, 12.13, 21.66, 29.32, 35.61, 40.88, 45.34, 49.18, 52.52, 55.44,
+          58.03, 67.48,
+        ];
+
+        pvpChart.data.labels = defIgnoreValues;
+        pvpChart.data.datasets = [
+          {
+            label: "1H + Shield",
+            data: oneHandValues,
+            borderColor: "#4361ee",
+            backgroundColor: "rgba(67, 97, 238, 0.1)",
+            fill: true,
+            tension: 0.3,
+          },
+          {
+            label: "2H Weapon",
+            data: twoHandValues,
+            borderColor: "#4895ef",
+            backgroundColor: "rgba(72, 149, 239, 0.1)",
+            fill: true,
+            tension: 0.3,
+          },
+        ];
+
+        pvpChart.update();
+      }
+
+      // Initial PvP calculation
+      calculatePvP();
+
+      /****************** EQUIPMENT DEF CALCULATOR ******************/
       document.addEventListener("DOMContentLoaded", function () {
         const eqDefInput = document.getElementById("eqDef");
         const eqDefPercentInput = document.getElementById("eqDefPercent");
@@ -405,12 +1754,10 @@
         const resultTitle = document.getElementById("resultTitle");
         const swapModeBtn = document.getElementById("swapMode");
         const calculationModeText = document.getElementById("calculationMode");
+        const secondInputIcon = document.getElementById("secondInputIcon");
 
         // Default mode
         let calculateDefPercent = true;
-
-        // Focus input on load
-        eqDefInput.focus();
 
         // Format number function
         function formatNumber(num) {
@@ -418,7 +1765,7 @@
         }
 
         // Calculate function
-        function calculate() {
+        function calculateEqDef() {
           resultContainer.classList.remove("active");
           setTimeout(() => {
             resultContainer.classList.add("active");
@@ -429,7 +1776,7 @@
           }, 10);
 
           if (calculateDefPercent) {
-            // Calculate DEF %
+            // Calculate Base DEF
             const eqDef = parseFloat(eqDefInput.value) || 0;
             const eqDefPercent = parseFloat(eqDefPercentInput.value) || 0;
 
@@ -442,7 +1789,7 @@
               resultValue.textContent = "--";
             }
           } else {
-            // Calculate DEF
+            // Calculate DEF%
             const eqDef = parseFloat(eqDefInput.value) || 0;
             const baseDef = parseFloat(eqDefPercentInput.value) || 0;
 
@@ -464,13 +1811,9 @@
           if (calculateDefPercent) {
             // Mode: Input DEF and DEF% to get Base DEF
             calculationModeText.textContent = "Calculate Base DEF";
-            document.querySelector('label[for="eqDef"]').textContent =
-              "Equipment DEF";
             document.querySelector('label[for="eqDefPercent"]').textContent =
               "Equipment DEF %";
-            document.querySelector(
-              ".input-group:nth-child(2) .input-icon"
-            ).textContent = "%";
+            secondInputIcon.textContent = "%";
             eqDefPercentInput.setAttribute(
               "placeholder",
               "Enter DEF % (e.g. 50.05)"
@@ -478,13 +1821,9 @@
           } else {
             // Mode: Input DEF and Base DEF to get DEF%
             calculationModeText.textContent = "Calculate DEF %";
-            document.querySelector('label[for="eqDef"]').textContent =
-              "Equipment DEF";
             document.querySelector('label[for="eqDefPercent"]').textContent =
               "Base DEF";
-            document.querySelector(
-              ".input-group:nth-child(2) .input-icon"
-            ).textContent = "DEF";
+            secondInputIcon.textContent = "DEF";
             eqDefPercentInput.setAttribute(
               "placeholder",
               "Enter base DEF (e.g. 9996.67)"
@@ -498,7 +1837,7 @@
         }
 
         // Button click event
-        calculateBtn.addEventListener("click", calculate);
+        calculateBtn.addEventListener("click", calculateEqDef);
 
         // Swap mode event
         swapModeBtn.addEventListener("click", swapMode);
@@ -512,9 +1851,16 @@
 
         eqDefPercentInput.addEventListener("keyup", function (e) {
           if (e.key === "Enter") {
-            calculate();
+            calculateEqDef();
           }
         });
+
+        // Focus input on load
+        if (
+          document.getElementById("equipDefCalc").classList.contains("active")
+        ) {
+          eqDefInput.focus();
+        }
       });
     </script>
   </body>
